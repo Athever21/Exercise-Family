@@ -3,9 +3,30 @@ import { promises as fs, readFileSync } from "fs";
 import path from "path";
 import template from "./template";
 import https from "https";
+import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
+require("dotenv").config();
+
+import errorHandler from "./utils/errorHandler";
+import userRouter from "./routers/userRouter";
+import authRouter from "./routers/authRouter";
 
 const cwd = process.cwd();
 const app = express();
+
+(async () => {
+  try {
+    const url = (process.env.NODE_ENV === "test") ? "mongodb://localhost/familyTest" : process.env.MONGODB_URL;
+    await mongoose.connect(url as string, {
+      useNewUrlParser: true,
+      useCreateIndex: true,
+      useUnifiedTopology: true,
+      useFindAndModify: false,
+    });
+  } catch (err) {
+    console.log("Unable to connect to database", err);
+  }
+})();
 
 let src = `<script src="/build/dist.js"></script>`;
 if (process.env.NODE_ENV === "production") {
@@ -18,22 +39,29 @@ if (process.env.NODE_ENV === "production") {
       }
     }
   })();
-} else {
+}
+
+if (process.env.NODE_ENV === "development") {
   require("./devBundle").default(app);
 }
 
+app.use(cookieParser());
+app.use(express.json());
 app.use("/build/", express.static(path.join(cwd, "build")));
+app.use("/api/users", userRouter);
+app.use("/api/auth", authRouter);
 app.get("*", (_, res: Response) => {
   return res.send(template(src));
 });
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 
 const credentials = {
-  key: readFileSync(path.join(cwd,"server","selfsigned.key")),
-  cert: readFileSync(path.join(cwd,"server","selfsigned.crt")),
+  key: readFileSync(path.join(cwd, "server", "selfsigned.key")),
+  cert: readFileSync(path.join(cwd, "server", "selfsigned.crt")),
 };
 
-const server = https.createServer(credentials, app);
+export const server = https.createServer(credentials, app);
 
 server.listen(PORT, () => console.log(`Server listening at PORT ${PORT}`));
