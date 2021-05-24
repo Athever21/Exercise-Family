@@ -2,11 +2,12 @@ export const createUser = async (
   api: any,
   username?: string,
   password?: string,
-  name?: string
+  name?: string,
+  admin?: string
 ) => {
   const res = await api
     .post("/api/users")
-    .send({ username, password, name })
+    .send({ username, password, name, role: admin })
     .trustLocalhost();
   return res;
 };
@@ -34,7 +35,33 @@ export const changeUser = async (
 ) => {
   const res = await api
     .patch(`/api/users/${id}`)
-    .send({token,...fields})
+    .set("Authorization", `Bearer ${token}`)
+    .send({ ...fields })
     .trustLocalhost();
+  return res;
+};
+
+export const createFamily = async (api: any, token: string, fields: any) => {
+  const res = await api
+    .post("/api/family")
+    .set("Authorization", `Bearer ${token}`)
+    .send(fields)
+    .trustLocalhost();
+
+  return res;
+};
+
+export const changeFamily = async (
+  api: any,
+  token: string,
+  id: string,
+  fields: any
+) => {
+  const res = await api
+    .patch(`/api/family/${id}`)
+    .set("Authorization", `Bearer ${token}`)
+    .send(fields)
+    .trustLocalhost();
+
   return res;
 };

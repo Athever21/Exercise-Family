@@ -99,7 +99,7 @@ describe("User /:id ENDPOINT", () => {
   it("Delete incorrectly", async () => {
     const res = await api
       .delete(`/api/users/${user1.id}`)
-      .send({ token: token2 })
+      .set("Authorization", `Bearer ${token2}`)
       .trustLocalhost();
 
     expect(res.status).toBe(403);
@@ -109,7 +109,7 @@ describe("User /:id ENDPOINT", () => {
   it("Delete correctly", async () => {
     const res = await api
       .delete(`/api/users/${user1.id}`)
-      .send({ token: token1 })
+      .set("Authorization", `Bearer ${token1}`)
       .trustLocalhost();
 
     expect(res.status).toBe(200);

@@ -7,9 +7,11 @@ import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 require("dotenv").config();
 
+import getAuthorization from "./utils/auth";
 import errorHandler from "./utils/errorHandler";
 import userRouter from "./routers/userRouter";
 import authRouter from "./routers/authRouter";
+import familyRouter from "./routers/familyRouter";
 
 const cwd = process.cwd();
 const app = express();
@@ -48,8 +50,11 @@ if (process.env.NODE_ENV === "development") {
 app.use(cookieParser());
 app.use(express.json());
 app.use("/build/", express.static(path.join(cwd, "build")));
+// @ts-ignore
+app.use(getAuthorization);
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/family", familyRouter);
 app.get("*", (_, res: Response) => {
   return res.send(template(src));
 });

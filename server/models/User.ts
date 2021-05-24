@@ -19,6 +19,10 @@ const userSchema = new Schema(
     role: {
       type: String,
       default: "user"
+    },
+    family: {
+      type: String,
+      ref: "Family"
     }
   },
   { timestamps: true }
@@ -29,6 +33,8 @@ export interface IUser extends Document {
   username: string;
   name: string;
   password?: string;
+  role: string;
+  family: string;
 }
 
 interface IUserModel extends Model<IUser> {
