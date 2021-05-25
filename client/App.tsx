@@ -1,26 +1,27 @@
-import React from "react";
-import {hot} from "react-hot-loader";
-import styled from "styled-components";
+import React, { lazy, Suspense } from "react";
+import { hot } from "react-hot-loader";
+import { useUser } from "./AuthProvider";
+import Loading from "./components/Loading";
 
-const Div = styled.div`
-  width: 100%;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`
-
-const H1 = styled.h1`
-  font-size: 7rem;
-  color: var(--main);
-`
+const Auth = lazy(() => import("./components/auth/Auth"));
+const Main = lazy(() => import("./components/main/Main"));
 
 const App = () => {
-  return(
-    <Div>
-      <H1>Hello World!</H1>
-    </Div>
-  )
-}
+  const { user } = useUser() as any;
+
+  return (
+    <div>
+      {user.username ? (
+        <Suspense fallback={<Loading />}>
+          <Main />
+        </Suspense>
+      ) : (
+        <Suspense fallback={<Loading />}>
+          <Auth />
+        </Suspense>
+      )}
+    </div>
+  );
+};
 
 export default hot(module)(App);

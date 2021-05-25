@@ -40,11 +40,11 @@ export const familyMiddleware = async (
   _: Response,
   next: NextFunction
 ) => {
+  if (req.method === "GET") return next();
+
   const family = await Family.findById(req.params.id);
   if (!family) throw new CustomError(400, "Family not found");
   req.family = family;
-
-  if (req.method === "GET") return next();
 
   if (!req.token) throw new CustomError(401, "Unauthorized");
 
@@ -59,7 +59,9 @@ export const familyMiddleware = async (
 };
 
 export const getFamily = async (req: FamilyRequest, res: Response) => {
-  return res.json(req.family);
+  const family = await Family.findById(req.params.id).populate("members");
+  if (!family) throw new CustomError(400, "Family not found");
+  return res.json(family);
 };
 
 export const patchFamily = async (req: FamilyRequest, res: Response) => {
@@ -130,7 +132,7 @@ export const deleteFamily = async (req: FamilyRequest, res: Response) => {
     user.family = "";
     await user.save();
   }
-  console.log(req.family, "SADFDSFGDS")
+
   await Family.findByIdAndDelete(req.family._id);
   return res.json("deleted");
 };
