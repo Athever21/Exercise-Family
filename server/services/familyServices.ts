@@ -11,7 +11,7 @@ interface FamilyRequest extends Request {
 }
 
 export const getFamilies = async (_: Request, res: Response) => {
-  const families = await Family.find({});
+  const families = await Family.find({}).populate("createdBy", "name");
   return res.json(families);
 };
 
@@ -59,7 +59,9 @@ export const familyMiddleware = async (
 };
 
 export const getFamily = async (req: FamilyRequest, res: Response) => {
-  const family = await Family.findById(req.params.id).populate("members");
+  const family = await Family.findById(req.params.id)
+    .populate("members")
+    .populate("fundsHistory.member", "name");
   if (!family) throw new CustomError(400, "Family not found");
   return res.json(family);
 };
@@ -78,6 +80,7 @@ export const patchFamily = async (req: FamilyRequest, res: Response) => {
         throw new CustomError(400, "Member not found or already added");
       req.family.members = [req.body.member, ...req.family.members];
       user.family = req.family._id;
+      user.request = "";
       await user.save();
       break;
     }
@@ -89,11 +92,15 @@ export const patchFamily = async (req: FamilyRequest, res: Response) => {
       req.family.members = (req.family.members as string[]).filter(
         (x: string) => x !== req.body.member
       );
+      const user = (await User.findById(req.body.member)) as IUser;
+      user.family = "";
+      await user.save();
       break;
     }
     case "REMOVE_FUNDS": {
       if (req.body.funds > req.family.funds)
         throw new CustomError(400, "Not sufficient funds");
+      if (!req.body.funds) throw new CustomError(400, "Funds cannot be empty");
       req.family.funds = req.family.funds - req.body.funds;
       req.family.fundsHistory = [
         {
@@ -121,18 +128,48 @@ export const patchFamily = async (req: FamilyRequest, res: Response) => {
   }
 
   await req.family.save();
+  if (req.body.action === "REMOVE_FUNDS") {
+    const family = await Family.findById(req.family._id).populate(
+      "fundsHistory.member",
+      "name"
+    );
+    return res.json(family);
+  }
+
+  if (req.body.action === "ADD_MEMBER") {
+    const family = await Family.findById(req.params.id)
+      .populate("members")
+      .populate("fundsHistory.member", "name");
+    return res.json(family);
+  }
+
   return res.json(req.family);
 };
 
 export const deleteFamily = async (req: FamilyRequest, res: Response) => {
   if (req.family.createdBy !== req.user._id)
     throw new CustomError(403, "Forbidden");
-  const members = await User.find({ family: req.family._id });
+  const members = await User.find({
+    $or: [{ family: req.family._id }, { request: req.family._id }],
+  });
   for (const user of members) {
     user.family = "";
+    user.request = "";
     await user.save();
   }
 
   await Family.findByIdAndDelete(req.family._id);
   return res.json("deleted");
+};
+
+export const requests = async (req: FamilyRequest, res: Response) => {
+  const users = await User.find({ request: req.body.id });
+  return res.json(users);
+};
+
+export const rejectRequest = async (req: FamilyRequest, res: Response) => {
+  const user = (await User.findById({ _id: req.body.id })) as IUser;
+  user.request = "";
+  await user.save();
+  return res.json(user);
 };

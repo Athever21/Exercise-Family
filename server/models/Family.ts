@@ -29,7 +29,7 @@ const familySchema = new Schema(
     fundsHistory: [
       {
         action_name: String,
-        member: String,
+        member: {type: String, ref: "User"},
         funds: Number,
       },
     ],

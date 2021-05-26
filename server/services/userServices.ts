@@ -59,7 +59,7 @@ export const getUser = async (req: UserRequest, res: Response) => {
 
 export const patchUser = async (req: UserRequest, res: Response) => {
   for (const key of Object.keys(req.body)) {
-    if (req.user[key as keyof IUser]) {
+    if (req.user[key as keyof IUser] || key === "request") {
       // @ts-ignore
       req.user[key] = req.body[key];
     }

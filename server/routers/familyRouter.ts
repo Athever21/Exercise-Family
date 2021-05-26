@@ -6,12 +6,18 @@ import {
   familyMiddleware,
   getFamily,
   patchFamily,
-  deleteFamily
+  deleteFamily,
+  requests,
+  rejectRequest
 } from "../services/familyServices";
 
 const router = Router();
 
 router.route("/").get(autoCatch(getFamilies)).post(autoCatch(createFamily));
+
+router.post("/requests/reject",autoCatch(rejectRequest));
+
+router.post("/requests",autoCatch(requests));
 
 router
   .route("/:id")

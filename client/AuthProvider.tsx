@@ -60,6 +60,8 @@ export const AuthProvider = ({ children }: any) => {
 
   const addFamilyToUser = (family: any) => setUser((u) => ({ ...u, family }));
 
+  const changeUser = (user: any) => setUser(user);
+
   useEffect(() => {
     refreshToken();
     setInterval(() => {
@@ -76,7 +78,7 @@ export const AuthProvider = ({ children }: any) => {
 
   return (
     <UserContext.Provider value={{ user, token }}>
-      <UserControlContext.Provider value={{ login, logout, addFamilyToUser }}>
+      <UserControlContext.Provider value={{ login, logout, addFamilyToUser, changeUser }}>
         {...children}
       </UserControlContext.Provider>
     </UserContext.Provider>

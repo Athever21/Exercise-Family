@@ -13,17 +13,18 @@ const userSchema = new Schema(
     username: {
       type: String,
       required: true,
-      unique: [true, "Username must be unique"],
+      unique: true,
     },
     password: String,
     role: {
       type: String,
-      default: "user"
+      default: "user",
     },
     family: {
       type: String,
-      ref: "Family"
-    }
+      ref: "Family",
+    },
+    request: String,
   },
   { timestamps: true }
 );
@@ -35,6 +36,7 @@ export interface IUser extends Document {
   password?: string;
   role: string;
   family: string;
+  request: string;
 }
 
 interface IUserModel extends Model<IUser> {
@@ -43,10 +45,7 @@ interface IUserModel extends Model<IUser> {
 }
 
 class User {
-  static async validatePassword(
-    password: string,
-    hash: string
-  ) {
+  static async validatePassword(password: string, hash: string) {
     const bool = await argon2.verify(hash, password);
     return bool;
   }

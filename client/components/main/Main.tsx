@@ -1,15 +1,19 @@
 import React from "react";
+import { useUser } from "../../AuthProvider";
 
 import Header from "./Header";
 import Home from "./Home";
+import AdminPanel from "./admin/AdminPanel";
 
 const Main = () => {
-  return(
+  const { user } = useUser() as any;
+
+  return (
     <>
       <Header />
-      <Home />
+      {user.role === "Admin" ? <AdminPanel /> : <Home />}
     </>
-  )
-}
+  );
+};
 
 export default Main;

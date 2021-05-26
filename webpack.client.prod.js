@@ -1,6 +1,6 @@
 const path = require("path");
-const TerserPlugin = require("terser-webpack-plugin");
 const cwd = process.cwd();
+const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = {
   name: "browser",
@@ -33,6 +33,6 @@ module.exports = {
     }
   },
   resolve: {
-    extensions: [".ts",".tsx",".js",".json"]
+    extensions: [".ts",".tsx",".js"]
   }
 }

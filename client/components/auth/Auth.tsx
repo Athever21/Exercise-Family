@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { useField } from "../../utils";
+import { base_url, useField } from "../../utils";
 import { useUserControl } from "../../AuthProvider";
+import axios from "axios";
 import {
   Container,
   H1,
@@ -36,7 +37,7 @@ const Auth = () => {
         setFieldError(fieldErrors);
       } else {
         const error = await login(username.value, password.value);
-        if (error) setError(error);
+        if (error) setError(error.error);
         setTimeout(() => setError(""), 4000);
       }
     } else {
@@ -47,7 +48,21 @@ const Auth = () => {
       if (Object.keys(fieldErrors).length > 0) {
         setFieldError(fieldErrors);
       } else {
-        console.log("register")
+        try {
+          await axios.post(`${base_url}/api/users`, {
+            username: username.value,
+            password: password.value,
+            name: name.value,
+          });
+
+          name.value = "";
+          username.value = "";
+          password.value = "";
+          setLoginState(true);
+        } catch (err) {
+          setError(err.response.data);
+          setTimeout(() => setError(""), 4000);
+        }
       }
     }
   };
@@ -62,9 +77,7 @@ const Auth = () => {
         {!loginState && (
           <>
             <Input {...name} placeholder="Name..." />
-            {fieldError.name && (
-              <FieldError>{fieldError.name}</FieldError>
-            )}
+            {fieldError.name && <FieldError>{fieldError.name}</FieldError>}
           </>
         )}
         <Input {...username} placeholder="Username..." />
@@ -77,7 +90,7 @@ const Auth = () => {
         <Change>
           {loginState ? "Not having account?" : "Already have account?"}
           <ChangeSpan onClick={() => setLoginState((l) => !l)}>
-            {loginState ? "Login" : "Register"}
+            {loginState ? "Register" : "Login"}
           </ChangeSpan>
         </Change>
       </Fields>

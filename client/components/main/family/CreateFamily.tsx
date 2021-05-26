@@ -1,8 +1,8 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import { useField, base_url } from "../../../utils";
 import { useUser, useUserControl } from "../../../AuthProvider";
 import axios from "axios";
-import { CreateContainer, CreateInput, CreateButton, Error } from "../styled";
+import { CreateInput, CreateButton, Error, Create } from "./styled";
 
 const CreateFamily = () => {
   const name = useField("text");
@@ -20,22 +20,22 @@ const CreateFamily = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-        addFamilyToUser(res.data.id);
-    } catch(err) {
+      addFamilyToUser(res.data.id);
+    } catch (err) {
       setError(err.response.data);
       setTimeout(() => setError(""), 4000);
     }
   };
 
   return (
-    <CreateContainer>
+    <Create>
       {error && <Error>{error}</Error>}
       <CreateInput>
         <h2>Create Family</h2>
         <input {...name} placeholder="Family name..." />
         <CreateButton onClick={createFamily}>Create</CreateButton>
       </CreateInput>
-    </CreateContainer>
+    </Create>
   );
 };
 
